@@ -71,8 +71,10 @@ async function createPassClass(req, res) {
 }
 
 async function createPassObject(req, res) {
+  let amount = req.query.amount;
+  let code = req.query.code;
   // TODO: Create a new Generic pass for the user
-  let genericObject = redeemMoneyOfferObject(issuerId, req.body.amount, req.body.code);
+  let genericObject = redeemMoneyOfferObject(issuerId, amount, code);
 
   // TODO: Create the signed JWT and link
   const claims = {
@@ -91,16 +93,13 @@ async function createPassObject(req, res) {
   const token = jwt.sign(claims, credentials.private_key, { algorithm: 'RS256' });
   const saveUrl = `https://pay.google.com/gp/v/save/${token}`;
 
-  res.send(`<a href='${saveUrl}'><img src='wallet-button.png'></a>`);
+  res.send(saveUrl);
 
 }
 
 const app = express();
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static('public'));
-app.post('/', async (req, res) => {
-  await createPassClass(req, res);
+app.get('/token', async (req, res) => {
   await createPassObject(req, res);
 });
 app.listen(3000);
