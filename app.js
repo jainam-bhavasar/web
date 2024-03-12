@@ -20,6 +20,8 @@ const bodyParser = require('body-parser');
 const { GoogleAuth } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
 const { geRedeemMoneyClassId, reedemMoneyOfferclass, redeemMoneyOfferObject } = require('./pass_classes/redeem_offer.js');
+
+const { getViewFarmClassId, viewFarmOfferClass, viewFarmOfferObject } = require('./pass_classes/view_farm.js');
 // TODO: Define Issuer ID
 const issuerId = '3388000000022317399';
 
@@ -35,10 +37,21 @@ const httpClient = new GoogleAuth({
   scopes: 'https://www.googleapis.com/auth/wallet_object.issuer'
 });
 
-async function createPassClass(req, res) {
-  // TODO: Create a Generic pass class
+async function createRedeemMoneyClass(req, res) {
   let genericClass = reedemMoneyOfferclass(issuerId);
   let classId = geRedeemMoneyClassId(issuerId);
+  await createClass(req, res, genericClass, classId);
+}
+
+async function createViewFarmClass(req, res) {
+  let genericClass = viewFarmOfferClass(issuerId);
+  let classId = getViewFarmClassId(issuerId);
+  await createClass(req, res, genericClass, classId);
+}
+
+async function createClass(req, res, genericClass, classId) {
+  // TODO: Create a Generic pass class
+
   let response;
   try {
     // Check if the class exists already
@@ -70,12 +83,24 @@ async function createPassClass(req, res) {
 
 }
 
-async function createPassObject(req, res) {
+async function createRedeemMoneyObject(req, res) {
   let amount = req.query.amount;
   let code = req.query.code;
   // TODO: Create a new Generic pass for the user
   let genericObject = redeemMoneyOfferObject(issuerId, amount, code);
+  await createObject(req, res, genericObject);
+}
 
+async function createViewFarmObject(req, res) {
+  let farmLink = req.query.farmlink;
+
+  let genericObject = viewFarmOfferObject(issuerId, farmLink);
+  await createObject(req, res, genericObject);
+}
+
+
+
+async function createObject(req, res, genericObject) {
   // TODO: Create the signed JWT and link
   const claims = {
     iss: credentials.client_email,
@@ -100,6 +125,10 @@ async function createPassObject(req, res) {
 const app = express();
 
 app.get('/token', async (req, res) => {
-  await createPassObject(req, res);
+  await createRedeemMoneyObject(req, res);
+});
+
+app.get('/viewFarmToken', async (req, res) => {
+  await createViewFarmObject(req, res);
 });
 app.listen(3000);
