@@ -92,8 +92,7 @@ async function createRedeemMoneyObject(req, res) {
 }
 
 async function createViewFarmObject(req, res) {
-  let farmLink = req.query.farmlink;
-
+  let farmLink = req.body.farmlink;
   let genericObject = viewFarmOfferObject(issuerId, farmLink);
   await createObject(req, res, genericObject);
 }
@@ -123,12 +122,12 @@ async function createObject(req, res, genericObject) {
 }
 
 const app = express();
-
+app.use(express.json())
 app.get('/token', async (req, res) => {
   await createRedeemMoneyObject(req, res);
 });
 
-app.get('/viewFarmToken', async (req, res) => {
+app.post('/viewFarmToken', async (req, res) => {
   await createViewFarmObject(req, res);
 });
 app.listen(3000);
